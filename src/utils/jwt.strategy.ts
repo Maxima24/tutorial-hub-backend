@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
-import { PassportStrategy } from '@nestjs/passport';
+import { AuthGuard, PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
+import {createParamDecorator,ExecutionContext} from '@nestjs/common'
 import { ConfigService } from '@nestjs/config';
 
 @Injectable()
@@ -18,3 +19,11 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     return { userId: payload.sub, email: payload.email };
   }
 }
+@Injectable()
+export class JwtAuthGuard extends AuthGuard('jwt'){}
+export const CurrentUser = createParamDecorator(
+  (data:unknown, ctx:ExecutionContext) =>{
+    const request  = ctx.switchToHttp().getRequest()
+    return request.user
+  }
+)

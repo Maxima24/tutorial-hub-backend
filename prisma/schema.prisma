@@ -6,46 +6,96 @@
 
 generator client {
   provider = "prisma-client-js"
- 
 }
+
 datasource db {
   provider = "postgresql"
   url      = env("DIRECT_URL")
-   directUrl = env("DIRECT_URL")
 }
 
-model User{
-  id   String @id @default(uuid())
-  name String 
-  email String @unique
-  password String 
-  avatarUrl String?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  videos Video[]
-  comments Comment[]
+model User {
+  id               String    @id @default(uuid())
+  name             String
+  email            String    @unique
+  password         String
+  avatarUrl        String?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+  verified         Boolean   @default(false)
+  sentMessages     Message[] @relation("SentMessages")
+  recievedMessages Message[] @relation("RecievedMessages")
+  videos           Video[]
+  courses          Course[]
+  comments         Comment[]
 }
-model Video{
-  id String @id @default(uuid())
-  title String
-  description String
-  url String @unique
+
+model Video {
+  id           String   @id @default(uuid())
+  title        String
+  description  String
+  url          String   @unique
   thumbnailUrl String
   category     String
-  duration Int
-  userId String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  author User @relation(fields: [userId], references: [id])
+  duration     Int
+  userId       String
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  courseId     String
+  course       Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+
+  author   User      @relation(fields: [userId], references: [id])
   comments Comment[]
 }
-model Comment{
-  id String @id @default(uuid())
-  text String
-  userId String
-  videoId String
+
+model Course {
+  id           String  @id @default(cuid())
+  title        String  @db.VarChar(255)
+  description  String  @db.Text
+  thumbnailUrl String? @db.VarChar(500)
+  userId       String
+  isPublished  Boolean @default(false)
+  slug         String? @unique
+
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  publishedAt DateTime?
+
+  author User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  videos Video[]
+
+  @@index([userId])
+  @@index([slug])
+  @@index([isPublished])
+}
+
+model Comment {
+  id        String   @id @default(uuid())
+  text      String
+  userId    String
+  videoId   String
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  user User @relation(fields: [userId],references: [id])
-  video Video @relation(fields:[videoId],references:[id])
+  user      User     @relation(fields: [userId], references: [id])
+  video     Video    @relation(fields: [videoId], references: [id])
+}
+
+model VerificationCode {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  code      String
+  expiresAt DateTime
+  attempts  Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Message {
+  id         String   @id @default(uuid())
+  content    String
+  senderId   String
+  recieverId String
+  sender     User     @relation("SentMessages", fields: [senderId], references: [id])
+  reciever   User     @relation("RecievedMessages", fields: [recieverId], references: [id])
+  createAt   DateTime @default(now())
+  updatedAt  DateTime @updatedAt
 }

@@ -1,4 +1,4 @@
-import { ConflictException, Injectable } from '@nestjs/common';
+import { BadRequestException, ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { BcryptHelper } from 'src/utils/bcrypt';
 import { PrismaService } from '../prisma/prisma.service';
@@ -20,6 +20,7 @@ export class AuthService {
       data: { email: data.email, password: hashedPassword, name: data.name },
     });
     const token = this.jwt.sign({ userId: user.id, email: user.email });
+
     return { user, token };
   }
   async login(data: { email: string; password: string }) {
@@ -38,4 +39,23 @@ export class AuthService {
     const{password,...safeUser} = user
     return { safeUser, token };
   }
+  async findById(id:string){
+    const user  = await this.prisma.client.user.findUnique({
+      where:{id}
+    })
+    if(!user){
+      throw new NotFoundException("User not found for given id")
+    }
+    const {password,...userWithoutPassword} = user
+    return userWithoutPassword as  typeof user
+  }
+  // async logout(email:string){
+  //   const logout = await this.prisma.client.user.delete({
+  //     where:{email}
+  //   })
+  //   if(!logout){
+  //     throw new BadRequestException("User could no")
+  //   }
+  // }
+  // }}
 }
