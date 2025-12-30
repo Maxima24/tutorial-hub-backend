@@ -16,7 +16,7 @@ export class VerificationService {
   async sendCode(email: string) {
     const code = this.generateVerificationCode();
     const expiresAt = new Date(Date.now() + 5 * 60 * 1000)
-    const name = await this.db.client.user.findFirst({
+    const name = await this.db.user.findFirst({
       where:{email},
       select:{
         name:true
@@ -25,7 +25,7 @@ export class VerificationService {
     if(!name) throw new NotFoundException(`User with email ${name} was not found`);
   
 
-    await this.db.client.verificationCode.upsert({
+    await this.db.verificationCode.upsert({
       where: { email },
       update: { code, expiresAt, attempts: 0 },
       create: { email, code, expiresAt, attempts: 0 }
@@ -50,7 +50,7 @@ export class VerificationService {
   }
 
   async verifyCode(email: string, code: string) {
-    const verification = await this.db.client.verificationCode.findUnique({
+    const verification = await this.db.verificationCode.findUnique({
       where: { email }
     });
 
@@ -60,19 +60,19 @@ export class VerificationService {
 
     // Check if code has expired
     if (new Date() > verification.expiresAt) {
-      await this.db.client.verificationCode.delete({ where: { email } });
+      await this.db.verificationCode.delete({ where: { email } });
       throw new BadRequestException("Verification code has expired");
     }
 
     // Check attempt limit
     if (verification.attempts >= 5) {
-      await this.db.client.verificationCode.delete({ where: { email } });
+      await this.db.verificationCode.delete({ where: { email } });
       throw new BadRequestException("Too many failed attempts. Please request a new code");
     }
 
     // Check if code matches
     if (verification.code !== code) {
-      await this.db.client.verificationCode.update({
+      await this.db.verificationCode.update({
         where: { email },
         data: { attempts: verification.attempts + 1 }
       });
@@ -80,7 +80,7 @@ export class VerificationService {
     }
 
     // Code is valid, delete it
-    await this.db.client.verificationCode.delete({
+    await this.db.verificationCode.delete({
       where: { email }
     });
 
@@ -92,7 +92,7 @@ export class VerificationService {
   }
 
   async resendCode(email: string) {
-    const verification = await this.db.client.verificationCode.findUnique({
+    const verification = await this.db.verificationCode.findUnique({
       where: { email }
     });
 
@@ -108,7 +108,7 @@ export class VerificationService {
     return this.sendCode(email);
   }
   async updateUserVerificationStatus(email:string,verified:boolean){
-    const user  = await this.db.client.user.update({
+    const user  = await this.db.user.update({
       where:{email},
       data:{
         verified

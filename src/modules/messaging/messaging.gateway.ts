@@ -22,7 +22,7 @@ import { PrismaService } from '../prisma/prisma.service';
 })
 export class MessagingGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @WebSocketServer()
-  server: Server;
+  server!: Server;
 
   private readonly logger = new Logger(MessagingGateway.name);
 
@@ -73,7 +73,7 @@ export class MessagingGateway implements OnGatewayConnection, OnGatewayDisconnec
       this.server.to(`user:${payload.recieverId}`).emit('receiveMessage', message);
       this.logger.debug('Message sent:', payload);
       return { status: 'ok', message };
-    } catch (err) {
+    } catch (err:any) {
       this.logger.error('Error sending message:', err);
       return { status: 'error', message: err.message };
     }
@@ -94,14 +94,14 @@ export class MessagingGateway implements OnGatewayConnection, OnGatewayDisconnec
       // We'll update this once we verify the token
       this.logger.debug('GetMessages request received');
       return { status: 'ok', message: 'Implement token verification' };
-    } catch (err) {
+    } catch (err:any) {
       this.logger.error('Error getting messages:', err);
       return { status: 'error', message: err.message };
     }
   }
 
   async getReceivedMessages(userId: string) {
-    const messages = await this.prisma.client.message.findMany({
+    const messages = await this.prisma.message.findMany({
       where: { recieverId: userId },
       include: {
         sender: true,

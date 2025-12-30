@@ -20,7 +20,7 @@ export class WsJwtGuard {
       socket.data.user = decoded;
      this.logger.debug('Token verified, user:', decoded);
       return true;
-    } catch (err) {
+    } catch (err:any) {
       this.logger.debug('Token verification failed:', err.message);
       return false;
     }

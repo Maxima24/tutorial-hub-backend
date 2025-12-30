@@ -1,5 +1,5 @@
 export class SendMessageDto{
-    senderId:string
-    content:string
-    recieverId:string
+    senderId!:string
+    content!:string
+    recieverId!:string
 }
