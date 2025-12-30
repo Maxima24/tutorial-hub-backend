@@ -6,7 +6,7 @@ import { SendMessageDto } from './DTO/send-message.dto';
 export class MessagingService {
     constructor(private readonly prisma:PrismaService){}
     async getMessage(userId:string,otherUserId:string){
-        const messages  = await this.prisma.client.message.findMany({
+        const messages  = await this.prisma.message.findMany({
             where:{
                 OR:[
                     {senderId:userId,recieverId:otherUserId},
@@ -21,7 +21,7 @@ export class MessagingService {
         return messages
     }
     async getReceivedMessages(userId: string) {
-    const messages = await this.prisma.client.message.findMany({
+    const messages = await this.prisma.message.findMany({
       where: { recieverId: userId },
       include: {
         sender: true,
@@ -35,7 +35,7 @@ export class MessagingService {
   }
 
     async sendMessage(senderId:string,dto:SendMessageDto){
-        const message  = await this.prisma.client.message.create({
+        const message  = await this.prisma.message.create({
            data:{
             content:dto.content,
             senderId:senderId,

@@ -2,11 +2,11 @@
 import { IsString,IsInt, } from "class-validator";
 export class VerifyCodeDto {
     @IsString()
-  email: string;
+  email!: string;
   @IsInt()
-  code: string;
+  code!: string;
     @IsString()
-  password: string;
+  password!: string;
     @IsString()
-  name: string;
+  name!: string;
 }

@@ -1,87 +1,138 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
-import { PrismaService } from '../prisma/prisma.service';
-import { CreateCourseDto } from './DTO/createCourse.dto';
-import { updateCourse } from './DTO/updateCourse.dto';
+import {
+  Injectable,
+  HttpException,
+  HttpStatus,
+  NotFoundException,
+  InternalServerErrorException,
+} from '@nestjs/common';
+import { PrismaService } from '@/modules/prisma/prisma.service';
+import {
+  CourseCreateDto,
+  CourseFindDTO,
+  PartialCourseFindDTO,
+} from './dto/course.create.dto';
 
 @Injectable()
 export class CoursesService {
   constructor(private readonly db: PrismaService) {}
-  async createCourse(data: CreateCourseDto) {
-    const { userId } = data;
-    const user = await this.db.client.user.findUnique({
-      where: { id: userId },
-    });
-    if (!user) {
-      throw new BadRequestException(`user with id ${userId} does not exist`);
-    }
-    const course =await this.db.client.course.create({
-      data: {
-        title: data.title,
-        description: data.description,
-        thumbnailUrl: data.thumbnailUrl,
-        isPublished: data.isPublished,
-        userId: data.userId,
-        videos: {
-          connect: data.videos.map((video) => ({ id: video.id })),
-        },
-      },
-      include: { videos: true },
-    });
-    if(!course){
-        throw new BadRequestException("Failed to create course")
-    }
-    return course
-  }
-  async getCourseById(id: string) {
-    const course  = await this.db.client.course.findUnique({
-        where: { id }
-    })
-    if(!course){
-        throw new BadRequestException(`Course with id ${id} does not exist`)
-    }
-    return course
-  }
-  async deleteCourse(id: string) {
-    const course  =  await this.db.client.course.findUnique({
-        where: { id }
-    })
-    if(!course){
-        throw new BadRequestException(`Course with id ${id} does not exist`)
-    }
-    return await this.db.client.course.delete({
-        where: { id }
-    })
-  }
-  async updateCourseContent(data: updateCourse) {
-    const userId  = data.userId;
-    const courseId = data.courseId
-    const user = await this.db.client.user.findUnique({
-      where: { id: userId },
-    });
-    if(!user){
-        throw new BadRequestException(`user with id ${userId} does not exist`)
-    }
-    const course =  await this.db.client.course.findUnique({
-        where: { id: data.userId }
-    })
-    if(!course){
-        throw new BadRequestException(`Course with id ${data.userId} does not exist`)
-    }
-    return await this.db.client.course.update({
 
-        where: { id:courseId},
+  async create(data: CourseCreateDto) {
+    try {
+      const { video, ...newData } = data;
+      const { userId, courseName } = newData;
+      const user = await this.db.user.findUnique({
+        where: { id: userId },
+      });
+      if (!user) {
+        throw new NotFoundException(
+          `User with the id ${userId} was not found `,
+        );
+      }
+      const videos = await Promise.all(
+        video.map((id) =>
+          this.db.video.findUnique({
+            where: { id },
+          }),
+        ),
+      );
+      const validVideos = videos.filter((v) => v !== null);
+      const arrangedVideos = validVideos.sort(
+        (a, b) => a.createdAt.getTime() - b.createdAt.getTime(),
+      );
+
+      const course = await this.db.course.create({
         data: {
-              title: data.title,
-        description: data.description,
-        thumbnailUrl: data.thumbnailUrl,
-        isPublished: data.isPublished,
-        userId: data.userId,
-      ...(data.videos && data.videos.length > 0 && {
-        videos: {
-          set: [], // Clear existing connections first
-          connect: data.videos.map((video) => ({ id: video.id })),
+          ...newData,
+          videos: {
+            connect: arrangedVideos.map((v) => ({ id: v.id })),
+          },
+          title: courseName,
         },
-      })         
-    }})
+      });
+      if (!course) {
+        throw new HttpException(
+          'Something went wrong',
+          HttpStatus.INTERNAL_SERVER_ERROR,
+        );
+      }
+    } catch (err) {
+      if (err instanceof HttpException) {
+        return err;
+      }
+    }
+  }
+  async findCourse(data: CourseFindDTO) {
+    try {
+      const { courseId } = data;
+      const course = this.db.course.findFirst({
+        where: { id: courseId },
+      });
+      if (!course) {
+        throw new NotFoundException('Course not found');
+      }
+      return {
+        success: true,
+        data: {
+          course,
+        },
+      };
+    } catch (err) {
+      if (err instanceof HttpException) {
+        return err;
+      } else {
+        throw new HttpException(
+          'something went wrong',
+          HttpStatus.INTERNAL_SERVER_ERROR,
+        );
+      }
+    }
+  }
+  async findCourseByName(data: PartialCourseFindDTO) {
+    {
+      try {
+        const { name } = data;
+        const course = await this.db.course.findMany({
+          where: { title: { contains: name, mode: 'insensitive' } },
+        });
+        if (!course) {
+          throw new NotFoundException(
+            `Courses with the name ${name} Could not be found`,
+          );
+        }
+        return {
+          success: true,
+          data: {
+            ...course,
+          },
+        };
+      } catch (err:any) {
+        if (err instanceof HttpException) {
+          return err;
+        } else {
+          return new InternalServerErrorException('Something went wrong', err);
+        }
+      }
+    }
+  }
+  async delete(id: string) {
+    try {
+      const deleted = await this.db.video.delete({
+        where: { id },
+      });
+      if (!deleted) {
+        throw new InternalServerErrorException(
+          `Something went Wrong, could not delete Course with Id ${id}`,
+        );
+      }
+      return {
+        message: 'Message deleted successfully',
+      };
+    } catch (err:any) {
+      if (err instanceof HttpException) {
+        return err;
+      } else {
+        return new InternalServerErrorException('Something went Wrong', err);
+      }
+    }
   }
 }

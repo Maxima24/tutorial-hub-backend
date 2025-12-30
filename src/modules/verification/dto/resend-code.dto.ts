@@ -1,3 +1,3 @@
 export class ResendCodeDto {
-  email: string;
+  email!: string;
 }

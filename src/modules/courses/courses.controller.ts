@@ -1,26 +1,28 @@
 import { Body, Controller, Delete, Get, Param, Patch, Post } from '@nestjs/common';
 import { CoursesService } from './courses.service';
-import { CreateCourseDto } from './DTO/createCourse.dto';
-import { updateCourse } from './DTO/updateCourse.dto';
+import { CourseCreateDto } from './dto/course.create.dto';
+// import { updateCourse } from './dto/updateCourse.dto';
+import { Course } from '@prisma/client';
+import { CourseFindDTO } from './dto/course.create.dto';
 
 @Controller('courses')
 export class CoursesController {
     constructor(private readonly courseService:CoursesService){}
     @Post()
-    async createCourse(@Body() body:CreateCourseDto){
-            return await this.courseService.createCourse(body)
+    async createCourse(@Body() body:CourseCreateDto){
+            return await this.courseService.create(body)
     }
     @Get(":id")
-    async getCourseById(@Param() id:string){
-        return this.courseService.getCourseById(id)
+    async getCourseById(@Param() courseId:CourseFindDTO){
+        return this.courseService.findCourse(courseId)
     }
     @Delete(":id")
     async deleteCourse(id:string){
-        return await this.courseService.deleteCourse(id)
+        return await this.courseService.delete(id)
     }
-    @Patch(":id")
-    async updateCourseById(@Param() updateCourseDto:updateCourse){
-        return await this.courseService.updateCourseContent(updateCourseDto)
-    }
+    // @Patch(":id")
+    // async updateCourseById(@Param() updateCourseDto:updateCourse){
+    //     return await this.courseService.updateCourseContent(updateCourseDto)
+    // }
     
 }

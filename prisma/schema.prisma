@@ -30,35 +30,35 @@ model User {
 }
 
 model Video {
-  id           String   @id @default(uuid())
-  title        String
-  description  String
-  url          String   @unique
-  thumbnailUrl String
-  category     String
-  duration     Int
-  userId       String
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
-  courseId     String
-  course       Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
-
-  author   User      @relation(fields: [userId], references: [id])
-  comments Comment[]
+  id            String    @id @default(uuid())
+  title         String
+  videoUrl      String
+  description   String
+  difficulty    String
+  duration      Int
+  courseId      String?
+  thumbnailUrl  String?   @db.VarChar(500)
+  videoPublicId String
+  price         String
+  userId        String
+  author        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  course        Course?   @relation(fields: [courseId], references: [id])
+  comment       Comment[]
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
 }
 
 model Course {
-  id           String  @id @default(cuid())
-  title        String  @db.VarChar(255)
-  description  String  @db.Text
-  thumbnailUrl String? @db.VarChar(500)
+  id           String    @id @default(cuid())
+  title        String    @db.VarChar(255)
+  description  String    @db.Text
+  thumbnailUrl String?   @db.VarChar(500)
   userId       String
-  isPublished  Boolean @default(false)
-  slug         String? @unique
-
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
-  publishedAt DateTime?
+  isPublished  Boolean   @default(false)
+  slug         String?   @unique
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  publishedAt  DateTime?
 
   author User    @relation(fields: [userId], references: [id], onDelete: Cascade)
   videos Video[]
