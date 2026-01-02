@@ -1,51 +1,38 @@
-import { Injectable } from '@nestjs/common';
-import { PrismaService } from '../prisma/prisma.service';
-import { SendMessageDto } from './DTO/send-message.dto';
+import { Injectable } from "@nestjs/common";
+import { PrismaService } from "../prisma/prisma.service";
+import { SendMessageDto } from "./DTO/send-message.dto";
+import { ChatsService } from "../chats/chats.service";
 
 @Injectable()
 export class MessagingService {
-    constructor(private readonly prisma:PrismaService){}
-    async getMessage(userId:string,otherUserId:string){
-        const messages  = await this.prisma.message.findMany({
-            where:{
-                OR:[
-                    {senderId:userId,recieverId:otherUserId},
-                     {senderId:otherUserId,recieverId:userId}
-                ]
-            },
-            include:{
-                sender:true,
-                reciever:true
-            }
-        })
-        return messages
+  constructor(
+    private readonly prisma: PrismaService,
+    private chatService: ChatsService
+  ) {}
+ 
+ async sendMessage(senderId: string, dto: SendMessageDto) {
+  // 1. Create or get chat
+  const chat = await this.chatService.createOrGetChat(
+    {
+      participantsId: [senderId, dto.reciepientId],
+      isGroup:false
     }
-    async getReceivedMessages(userId: string) {
-    const messages = await this.prisma.message.findMany({
-      where: { recieverId: userId },
-      include: {
-        sender: true,
-        reciever: true,
-      },
-      orderBy: {
-        createdAt: 'asc',
-      } as any,
-    });
-    return messages;
-  }
+   );
 
-    async sendMessage(senderId:string,dto:SendMessageDto){
-        const message  = await this.prisma.message.create({
-           data:{
-            content:dto.content,
-            senderId:senderId,
-            recieverId:dto.recieverId
-           },
-           include:{
-            sender:true,
-            reciever:true
-           }
-        })
-        return message
-    }
+  // 2. Create message linked to chat
+  const message = await this.prisma.message.create({
+    data: {
+      content: dto.content,
+      senderId,
+      chatId: chat.id,
+    },
+    include: { sender: true },
+  });
+
+  // 3. Update chat last message
+  
+
+  return { message, chatId: chat.id };
+}
+
 }

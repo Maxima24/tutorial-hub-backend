@@ -2,7 +2,6 @@ import { Body, Controller, Delete, Get, Param, Patch, Post } from '@nestjs/commo
 import { CoursesService } from './courses.service';
 import { CourseCreateDto } from './dto/course.create.dto';
 // import { updateCourse } from './dto/updateCourse.dto';
-import { Course } from '@prisma/client';
 import { CourseFindDTO } from './dto/course.create.dto';
 
 @Controller('courses')
