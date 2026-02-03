@@ -13,7 +13,7 @@ export class PrismaService extends PrismaClient implements OnModuleInit,OnModule
             const start = Date.now()
                 try{
                     await this.$queryRaw`SELECT 1;`
-                    return {
+                    return { 
                         service:"prisma",
                         status:"up",
                         message:"Prisma is up",

@@ -86,4 +86,9 @@ export class AuthController {
   async getCurrentUsers(@CurrentUser() authUser: AuthUser) {
     return this.authService.findById(authUser.id);
   }
+  @Get("get-user-details")
+  async getUserData(@Body() userId:string){
+    return this.authService.findById(userId)
+  }
 }
+
