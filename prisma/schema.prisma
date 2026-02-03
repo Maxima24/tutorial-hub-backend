@@ -10,23 +10,22 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-  url      = env("DIRECT_URL")
 }
 
-model User {
-  id               String    @id @default(uuid())
-  name             String
-  email            String    @unique
-  password         String
-  avatarUrl        String?
-  createdAt        DateTime  @default(now())
-  updatedAt        DateTime  @updatedAt
-  verified         Boolean   @default(false)
-  sentMessages     Message[] @relation("SentMessages")
-  recievedMessages Message[] @relation("RecievedMessages")
-  videos           Video[]
-  courses          Course[]
-  comments         Comment[]
+model   User {
+  id           String     @id @default(uuid())
+  name         String
+  email        String     @unique
+  password     String
+  avatarUrl    String?
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+  verified     Boolean    @default(false)
+  sentMessages Message[]  @relation("SentMessages")
+  videos       Video[]
+  courses      Course[]
+  comments     Comment[]
+  chatUsers    ChatUser[]
 }
 
 model Video {
@@ -93,9 +92,26 @@ model Message {
   id         String   @id @default(uuid())
   content    String
   senderId   String
-  recieverId String
   sender     User     @relation("SentMessages", fields: [senderId], references: [id])
-  reciever   User     @relation("RecievedMessages", fields: [recieverId], references: [id])
   createAt   DateTime @default(now())
   updatedAt  DateTime @updatedAt
+  chat       Chat     @relation(fields: [chatId], references: [id])
+  chatId     String
+}
+
+model ChatUser {
+  id     String @id @default(uuid())
+  chatId String
+  chat   Chat   @relation(references: [id], fields: [chatId])
+  user   User   @relation(fields: [userId], references: [id])
+  userId String
+}
+
+model Chat {
+  id           String     @id @default(uuid())
+  name         String?
+  messages     Message[]
+  participants ChatUser[]
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
 }
