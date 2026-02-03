@@ -13,6 +13,7 @@ import { MessagingModule } from "./modules/messaging/messaging.module";
 import { CoursesModule } from "./modules/courses/courses.module";
 import { CoursesController } from "./modules/courses/courses.controller";
 import { VerificationService } from "./modules/verification/verification.service";
+import { ChatsModule } from "./modules/chats/chats.module";
 
 @Module({
   imports: [
@@ -89,6 +90,7 @@ import { VerificationService } from "./modules/verification/verification.service
     AuthModule,
     VideoModule,
     CoursesModule,
+    ChatsModule,
     MessagingModule,
   ],
   providers: [PrismaService, VerificationService],

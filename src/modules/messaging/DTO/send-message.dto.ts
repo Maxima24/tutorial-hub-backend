@@ -1,5 +1,5 @@
-export class SendMessageDto{
-    senderId!:string
-    content!:string
-    recieverId!:string
+export class SendMessageDto {
+  isGroup?: boolean;
+  content!: string;
+  reciepientId!:string
 }

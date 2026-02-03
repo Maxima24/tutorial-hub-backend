@@ -24,7 +24,7 @@ async function bootstrap() {
 
   // Fixed CORS configuration
   app.enableCors({
-    origin: ["http://localhost:3000"],
+    origin: "*",
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"], // Fixed: was "method", should be "methods"
     credentials: true, // Fixed: was "Credential", should be "credentials"
   });
