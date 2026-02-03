@@ -14,7 +14,7 @@ RUN pnpm install --no-frozen-lockfile
 ARG DIRECT_URL
 ENV DIRECT_URL=${DIRECT_URL}
 
-RUN npx prisma@6 db push
+RUN npx prisma@6 generate
 
 COPY . .
 RUN pnpm run build
@@ -35,7 +35,7 @@ RUN pnpm install --prod --no-frozen-lockfile
 ARG DIRECT_URL
 ENV DIRECT_URL=${DIRECT_URL}
 
-RUN npx prisma@6 db push
+RUN npx prisma@6 generate
 
 COPY --from=builder /app/dist ./dist
 
