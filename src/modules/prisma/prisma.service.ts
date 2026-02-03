@@ -5,24 +5,7 @@ import { ConfigService } from '@nestjs/config';
 @Injectable()
 export class PrismaService extends PrismaClient implements OnModuleInit,OnModuleDestroy {
     
-      constructor(private configService: ConfigService) {
-    // Always call super first with the DB URL
-    super({
-      adapter: configService.get<string>('DIRECT_URL'),
-    });
-
-    // Hot reload safety (only in development)
-    if (process.env.NODE_ENV !== 'production') {
-      // @ts-ignore
-      if (!(global as any).prisma) {
-        // @ts-ignore
-        (global as any).prisma = this;
-      } else {
-        // @ts-ignore
-        return (global as any).prisma;
-      }
-    }
-  }
+   
         async onModuleInit() {
             await this.$connect()
         }
