@@ -17,7 +17,7 @@ COPY prisma ./prisma/
 RUN pnpm install --no-frozen-lockfile
 
 # 4. Generate Prisma Client (The files now exist, so this will succeed)
-RUN npx prisma@6 generate
+RUN npx prisma@6 db push 
 
 # 5. Copy remaining source code and build
 COPY . .
@@ -41,7 +41,7 @@ COPY prisma ./prisma/
 RUN pnpm install --prod --no-frozen-lockfile
 
 # 9. Re-generate for the production node_modules
-RUN npx prisma generate
+RUN npx prisma@6 db push
 
 # 10. Copy built application
 COPY --from=builder /app/dist ./dist
