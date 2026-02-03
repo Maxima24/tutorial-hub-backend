@@ -1,10 +1,11 @@
-import { Injectable } from "@nestjs/common";
+import { Injectable, Logger } from "@nestjs/common";
 import { PrismaService } from "../prisma/prisma.service";
 import { SendMessageDto } from "./DTO/send-message.dto";
 import { ChatsService } from "../chats/chats.service";
 
 @Injectable()
 export class MessagingService {
+  private logger = new Logger(MessagingService.name)
   constructor(
     private readonly prisma: PrismaService,
     private chatService: ChatsService
@@ -12,6 +13,7 @@ export class MessagingService {
  
  async sendMessage(senderId: string, dto: SendMessageDto) {
   // 1. Create or get chat
+  this.logger.debug("This is the dto object",dto)
   const chat = await this.chatService.createOrGetChat(
     {
       participantsId: [senderId, dto.reciepientId],
@@ -26,7 +28,13 @@ export class MessagingService {
       senderId,
       chatId: chat.id,
     },
-    include: { sender: true },
+    include: { sender:{
+      select:{
+        id:true,
+        name:true,
+        avatarUrl:true
+      }
+    }},
   });
 
   // 3. Update chat last message

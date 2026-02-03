@@ -11,7 +11,7 @@ import { Server, Socket } from "socket.io";
 import { MessagingService } from "./messaging.service";
 import { SendMessageDto } from "./DTO/send-message.dto";
 import { WsJwtGuard } from "./guards/ws-jwt.guard";
-import { UseGuards, Logger } from "@nestjs/common";
+import { UseGuards, Logger, UnauthorizedException } from "@nestjs/common";
 import { PrismaService } from "../prisma/prisma.service";
 import { JwtService } from "@nestjs/jwt";
 import { ChatsService } from "./../chats/chats.service";
@@ -108,6 +108,9 @@ handleJoinChats(
       const senderId = jwtPayload.sub || jwtPayload.userId;
       this.logger.debug("this is the sender id ", senderId);
       this.logger.debug("this is the payload from the frontend",payload)
+      if(!senderId){
+        throw new UnauthorizedException("Invalid authentication token")
+      }
       // Send message using the verified senderId
       const { message, chatId } = await this.messagingService.sendMessage(
         senderId,

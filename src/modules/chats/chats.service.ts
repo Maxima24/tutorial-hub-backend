@@ -15,10 +15,29 @@ export class ChatsService {
   const existingChat = await this.db.chat.findFirst({
       where: {
         participants: {
-          every: { userId: { in: participantsId } }, // pseudo-concept: match all participants
+          every: { 
+            userId: { 
+              in: participantsId } }, // pseudo-concept: match all participants
         },
       },
-      include: { participants: true },
+      include: { participants:{
+        select:{
+          id:true,
+          chatId:true,
+          chat:true,
+          userId:true,
+          user:{
+            select:
+            {
+              id:true,
+              name:true,
+              email:true,
+              verified:true,
+              avatarUrl:true
+            }
+          }
+        }
+      } },
     });
 
     if (existingChat) {
@@ -40,7 +59,7 @@ export class ChatsService {
     });
     return newChat;
   }
-
+ 
   async getUserChats(userId: string) {
     const chats = await this.db.chat.findMany({
       where: {
@@ -54,7 +73,6 @@ export class ChatsService {
         },
         messages: {
           orderBy: { createAt: "asc" },
-          take: 1,
         },
       },
       orderBy:{updatedAt:"desc"}
