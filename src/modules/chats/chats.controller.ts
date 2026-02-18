@@ -11,10 +11,14 @@ import {
 import { ChatsService } from "./chats.service";
 import { CreateChatDto } from "./dto/create-chat.dto";
 import { UpdateChatDto } from "./dto/update-chat.dto";
+import { DeleteDto } from "../messaging/DTO/delete-message-dto";
+import { MessagingService } from "../messaging/messaging.service";
 
 @Controller("chats")
 export class ChatsController {
-  constructor(private readonly chatsService: ChatsService) {}
+  constructor(private readonly chatsService: ChatsService,
+    private readonly messagingService:MessagingService
+  ) {}
 
   @Post()
   createorGetChat(@Body() createChatDto: CreateChatDto) {
@@ -35,7 +39,10 @@ export class ChatsController {
   update(@Param("id") id: string, @Body() updateChatDto: UpdateChatDto) {
     return this.chatsService.update(+id, updateChatDto);
   }
-
+  @Delete("message/:id")
+  deleteMessage(@Param('id') id:string,@Body() deleteDtoData:DeleteDto){
+    return this.messagingService.deleteMessage(id,deleteDtoData)
+}
   @Delete(":id")
   remove(@Param("id") id: string) {
     return this.chatsService.remove(+id);

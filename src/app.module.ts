@@ -14,6 +14,7 @@ import { CoursesModule } from "./modules/courses/courses.module";
 import { CoursesController } from "./modules/courses/courses.controller";
 import { VerificationService } from "./modules/verification/verification.service";
 import { ChatsModule } from "./modules/chats/chats.module";
+import { UsersModule } from "./modules/users/users.module";
 
 @Module({
   imports: [
@@ -88,6 +89,7 @@ import { ChatsModule } from "./modules/chats/chats.module";
     }),
     // Your modules
     AuthModule,
+    UsersModule,
     VideoModule,
     CoursesModule,
     ChatsModule,

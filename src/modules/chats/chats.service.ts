@@ -1,4 +1,4 @@
-import { Injectable, Logger } from "@nestjs/common";
+import { Injectable, Logger, NotFoundException } from "@nestjs/common";
 import { CreateChatDto } from "./dto/create-chat.dto";
 import { UpdateChatDto } from "./dto/update-chat.dto";
 import { PrismaService } from "../prisma/prisma.service";
@@ -72,13 +72,22 @@ export class ChatsService {
           include: { user: true },
         },
         messages: {
-          orderBy: { createAt: "asc" },
+          orderBy: { createdAt: "asc" },
+          include:{
+            replies:{
+          orderBy:{createdAt: "asc"}
+        }
+          }
         },
+
       },
       orderBy:{updatedAt:"desc"}
     });
+    
     this.logger.debug("this are the chats",chats)
-    return chats
+    if(!chats) throw new NotFoundException("The chats could not be found ")
+   
+      return chats
   }
 
   findAll() {
