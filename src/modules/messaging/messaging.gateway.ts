@@ -15,6 +15,7 @@ import { UseGuards, Logger, UnauthorizedException } from "@nestjs/common";
 import { PrismaService } from "../prisma/prisma.service";
 import { JwtService } from "@nestjs/jwt";
 import { ChatsService } from "./../chats/chats.service";
+import { ReplyMessageDto } from "./DTO/reply-message-dto";
 
 @WebSocketGateway({
   cors: {
@@ -124,6 +125,28 @@ handleJoinChats(
       this.logger.error("Error sending message:", err);
       return { status: "error", message: err.message };
     }
+  }
+
+  @SubscribeMessage("replyMessage")
+  async handleReplyMessage(
+      @ConnectedSocket() client:Socket,
+    @MessageBody() payload:ReplyMessageDto
+  ){
+    const token = client.handshake.auth.token
+    if(!token){
+        this.logger.warn("SendMessage: No token provided");
+      return { status: "error", message: "Unauthorized" };
+    }
+    const jwtPayload = await this.jwtService.verifyAsync(token)
+    const senderId = jwtPayload.sub || jwtPayload.userId
+    if(!senderId
+    ){
+      throw new UnauthorizedException("Invalid authentication token")
+    }
+   const {reply,chatId} = await this.messagingService.replyMessage(
+      senderId,payload
+    )
+       this.server.to(chatId).emit("receiveReply", reply);
   }
 }
  

@@ -29,6 +29,7 @@ export class AuthService {
       this.logger.debug("User creation creation started")
       const user = await this.db.user.create({
         data:{
+          
           name,email,password:hashed_password
         }
       });
