@@ -20,7 +20,7 @@ export class VideoController {
     return await this.videoService.create(body);
   }
   @Get(":id")
-  async findById(@Param() id: string) {
+  async findById(@Param("id") id: string) {
     return await this.videoService.findById(id);
   }
   @Get("")
